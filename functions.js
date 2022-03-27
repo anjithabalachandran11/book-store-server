@@ -2,37 +2,41 @@ const db=require('./model')
 const bcrypt = require('bcryptjs/dist/bcrypt')
 
 
-adminlogin = (id,password)=>{
-    const pswd = pswdhashfun(password)
-    return db.User.findOne({id,pswd}).then((user)=>{
+adminlogin = (username,password)=>{
+    return db.User.findOne({username}).then((user)=>{
         console.log(user)
         if(user){
-            return {
-                message : 'login success',
-                statuscode : 200,
-                user
+            if(user.password==password){
+                return {
+                    message : 'login success',
+                    statuscode : 200,
+                    user
+                }
             }
+            else{
+                return {
+                    message : 'incorrect password',
+                    statuscode : 201,
+                }
+            }
+           
         }
         else {
             return {
                 message : 'unable to login',
-                statuscode : 401,
+                statuscode : 202,
             }
         }
         
     })
-}
-const pswdhashfun = async (password)=>{
-    const hashedpswd = await bcrypt.hash(password,8)
-    return hashedpswd
 }
 
 addnewbook = (id,name,author,description,language,publication,price,status)=>{
     return db.Book.findOne({book_id:id}).then((book)=>{
         if(book){
             return {
-                message : "book already exist",
-                statuscode : 400,
+                message : "book already exist!!!",
+                statuscode : 201,
                 book
             }
         }
@@ -48,7 +52,7 @@ addnewbook = (id,name,author,description,language,publication,price,status)=>{
                 book_status:status})
             newbook.save()
             return {
-                message : "added",
+                message : " book added sucessfully..",
                 statuscode : 200,
             }
         }
@@ -62,19 +66,19 @@ editbook = (data)=>{
             author:data.author,
             description:data.description,
             language:data.language,
-            publication:data.publication,
+            publication:data.publisher,
             price:data.price
         }).then((book)=>{
         if(book){
             return {
-                message : "updated",
+                message : "Book details updated successfully..",
                 statuscode : 200
             }
         }
         else{
             return {
-                message : "no book",
-                statuscode : 401
+                message : "No such book exist!!!",
+                statuscode : 201
             }
         }
     })
@@ -82,14 +86,23 @@ editbook = (data)=>{
 deletebook = (data)=>{
     return db.Book.findOneAndUpdate({book_id:data},{book_status:"DELETED"}).then((book)=>{
         if(book){
-            return {
-                message : "deleted",
-                statuscode : 200
+            if(book.book_status='AVAILABLE'){
+                return {
+                    message : "Book deleted successfully...",
+                    statuscode : 200
+                }
             }
+            else{
+                return {
+                    message : "Book already deleted!!!",
+                    statuscode : 201
+                }
+            }
+            
         }
         else{
             return {
-                message : "no book",
+                message : "No such book",
                 statuscode : 401
             }
         }

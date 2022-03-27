@@ -2,16 +2,21 @@ const express=require('express')
 const jwt=require('jsonwebtoken')
 const app=express()
 const fun = require('./functions')
+const cors = require('cors')
 app.use(express.json())
+app.use(cors({
+    origin:'http://localhost:4200'
+}))
 
 app.post('/adminlogin',(req,res)=>{
+    console.log(req.body.username,req.body.password)
     fun.adminlogin(req.body.username,req.body.password).then((result)=>{
         res.status(result.statuscode).json(result)
     })
 })
 
 app.post('/addbook',(req,res)=>{
-    fun.addnewbook(req.body.book_id,req.body.book_name,req.body.author,req.body.description,req.body.language,req.body.publication,req.body.price)
+    fun.addnewbook(req.body.book_id,req.body.book_name,req.body.author,req.body.description,req.body.language,req.body.publisher,req.body.price)
     .then((result)=>{
         res.status(result.statuscode).json(result)
     })

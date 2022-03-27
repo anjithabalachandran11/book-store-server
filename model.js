@@ -130,24 +130,12 @@ module.exports = {
 }
 
 
-
-// const pswdhash = async ()=>{
-//     const password="admin1000"
-//     const hashedpswd = await bcrypt.hash(password,8)
-//     console.log("password: "+password)
-//     console.log("hashed password: ",hashedpswd)
-
-//     const newUser = new User({
-//         user_id : 1000,
-//         username : "ADMIN",
-//         name : "ADMIN",
-//         password : hashedpswd,
-//         category : "admin",
-//     })
-//     newUser.save()
-
-//     // const isMatch = await bcrypt.compare('admin1000',hashedpaswd)
-//     // console.log(isMatch)
-// }
-//  pswdhash()
+// const newUser = new User({
+//     user_id : 1000,
+//     username : "ADMIN",
+//     name : "ADMIN",
+//     password : "admin1000",
+//     category : "admin",
+// })
+// newUser.save()
 
