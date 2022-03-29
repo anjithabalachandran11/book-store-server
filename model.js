@@ -9,7 +9,7 @@ const UserSchema = new mongoose.Schema({
     user_id :{
         type : Number,
         required : true,
-        minlength : 4,
+        minlength : 5,
         unique : true
     },
     username : {
@@ -21,7 +21,6 @@ const UserSchema = new mongoose.Schema({
     name : {
         type : String,
         required : true,
-        minlength : 5,
         uppercase : true
     },
     password : {
@@ -36,7 +35,7 @@ const UserSchema = new mongoose.Schema({
     },
     userstatus : {
         type : String,
-        default : "UNBLOCK",
+        default : "UNBLOCKED",
         uppercase : true
     }
 },
@@ -109,6 +108,9 @@ const PostSchema = new mongoose.Schema({
         type : mongoose.Types.ObjectId,
         ref : 'User'
     },
+    username : {
+        type : String
+    },
     book_id : {
         type : mongoose.Types.ObjectId,
         ref : 'Book'
@@ -125,7 +127,7 @@ const Post = mongoose.model('Post',PostSchema)
 module.exports = {
     User,
     Book,
-    Post
+    Post,
 
 }
 
