@@ -67,9 +67,12 @@ const BookSchema = new mongoose.Schema({
         ref : 'Post'
     }],
     ratings : [{
-        type : mongoose.Types.ObjectId,
-        ref : 'Post'
+        type : Number
     }],
+    averagerating : {
+        type : Number,
+        default :0
+    },
     language : {
         type : String,
         required : true,
@@ -102,7 +105,8 @@ const PostSchema = new mongoose.Schema({
         type : String,
     },
     rating : {
-        type : Number
+        type : Number,
+        default : 0
     },
     user_id : {
         type : mongoose.Types.ObjectId,
@@ -131,6 +135,7 @@ module.exports = {
 
 }
 
+// ADMIN DATA 
 
 // const newUser = new User({
 //     user_id : 1000,
@@ -140,4 +145,3 @@ module.exports = {
 //     category : "admin",
 // })
 // newUser.save()
-

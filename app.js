@@ -8,6 +8,8 @@ app.use(cors({
     origin:'http://localhost:4200'
 }))
 
+// ADMIN REQUESTS
+
 app.post('/adminlogin',(req,res)=>{
     fun.adminlogin(req.body.username,req.body.password).then((result)=>{
         res.status(result.statuscode).json(result)
@@ -35,28 +37,15 @@ app.put('/delete',(req,res)=>{
 })
 
 app.put('/add',(req,res)=>{
-    fun.add(req.body.book_id)
+    fun.addbook(req.body.book_id)
     .then((result)=>{
         res.status(result.statuscode).json(result)
     })
 })
 
 app.post('/viewbook',(req,res)=>{
-    fun.viewbook(req.body.sortoption,parseInt(req.body.skipval))
+    fun.viewbooks(req.body.sortoption,parseInt(req.body.skipval))
     .then((result)=>{
-        res.status(result.statuscode).json(result)
-    })
-})
-
-
-app.post('/register',(req,res)=>{
-    fun.register(req.body).then((result)=>{
-        res.status(result.statuscode).json(result)
-    })
-})
-
-app.post('/login',(req,res)=>{
-    fun.login(req.body.username,req.body.password).then((result)=>{
         res.status(result.statuscode).json(result)
     })
 })
@@ -69,15 +58,37 @@ app.post('/viewuser',(req,res)=>{
 })
 
 app.put('/blockuser',(req,res)=>{
-    fun.block(req.body.user_id)
+    fun.blockuser(req.body.user_id)
     .then((result)=>{
         res.status(result.statuscode).json(result)
     })
 })
 
 app.put('/unblockuser',(req,res)=>{
-    fun.unblock(req.body.user_id)
+    fun.unblockuser(req.body.user_id)
     .then((result)=>{
+        res.status(result.statuscode).json(result)
+    })
+})
+
+app.post('/adminbook',(req,res)=>{
+    fun.adminviewbook(req.body.bookid)
+    .then((data)=>{
+        res.status(data.statuscode).json(data)
+    })
+})
+
+
+// CUSTOMER REQUESTS
+
+app.post('/register',(req,res)=>{
+    fun.register(req.body).then((result)=>{
+        res.status(result.statuscode).json(result)
+    })
+})
+
+app.post('/login',(req,res)=>{
+    fun.userlogin(req.body.username,req.body.password).then((result)=>{
         res.status(result.statuscode).json(result)
     })
 })
@@ -96,18 +107,12 @@ app.post('/book',(req,res)=>{
     })
 })
 
-app.post('/adminbook',(req,res)=>{
-    fun.adminbook(req.body.bookid)
-    .then((data)=>{
-        res.status(data.statuscode).json(data)
-    })
-})
-
 app.put('/postcomment',(req,res)=>{
     userid=parseInt(req.body.userid)
     bookid=parseInt(req.body.bookid)
-    console.log(req.body.comment,userid,bookid)
-    fun.postcomment(req.body.comment,userid,bookid)
+    rating=parseInt(req.body.rating)
+    console.log(req.body.comment,rating,userid,bookid)
+    fun.postcomment(req.body.comment,rating,userid,bookid)
     .then((result)=>{
         res.status(result.statuscode).json(result)
     })
