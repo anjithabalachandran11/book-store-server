@@ -107,12 +107,20 @@ app.post('/book',(req,res)=>{
     })
 })
 
-app.put('/postcomment',(req,res)=>{
+app.post('/postcomment',(req,res)=>{
     userid=parseInt(req.body.userid)
     bookid=parseInt(req.body.bookid)
     rating=parseInt(req.body.rating)
-    console.log(req.body.comment,rating,userid,bookid)
     fun.postcomment(req.body.comment,rating,userid,bookid)
+    .then((result)=>{
+        res.status(result.statuscode).json(result)
+    })
+})
+
+app.put('/editcomment',(req,res)=>{
+    userid=parseInt(req.body.userid)
+    bookid=parseInt(req.body.bookid)
+    fun.editcomment(req.body.newcomment,userid,bookid)
     .then((result)=>{
         res.status(result.statuscode).json(result)
     })

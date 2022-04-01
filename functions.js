@@ -1,5 +1,4 @@
 const db=require('./model')
-const bcrypt = require('bcryptjs/dist/bcrypt')
 
 // ADMIN OPERATIONS
 
@@ -256,12 +255,13 @@ register = (userdata)=>{
             }
         }
         else{
+            
             const newUser = new db.User({
-                    user_id : userdata.user_id,
-                    username : userdata.username,
-                    name : userdata.name,
-                    password : userdata.password,
-                    category : "USER",
+                user_id : userdata.user_id,
+                username : userdata.username,
+                name : userdata.name,
+                password : userdata.password,
+                category : "USER",
             })
             newUser.save()
             return { 
@@ -377,7 +377,7 @@ postcomment=(comment,rating,user_id,book_id,)=>{
                         //console.log(i)
                     })
                     //console.log(book.ratings.length)
-                    book.averagerating=sum/book.ratings.length
+                    book.averagerating=Math.floor(sum/book.ratings.length)
                     //console.log(book.averagerating)
                     book.save()
                     return {
@@ -402,22 +402,68 @@ postcomment=(comment,rating,user_id,book_id,)=>{
     })
 }
 
+editcomment=(newcomment,user_id,book_id)=>{
+    return db.User.findOne({user_id}).then((user)=>{
+        if(user){
+            userid=user._id
+            return db.Book.findOne({book_id}).then((book)=>{
+                bookid=book._id
+                return db.Post.findOne({user_id:userid,book_id:bookid}).then((post)=>{
+                    if(post){
+                        post.comment=newcomment
+                        post.save()
+                        return {
+                            statuscode : 200,
+                            message : "Comment updated"
+                        }
+                    }
+                })
+            })
+        }
+    })
+}
+
+deletecomment=(user_id,book_id)=>{
+    return db.User.findOne({user_id}).then((user)=>{
+        if(user){
+            userid=user._id
+            return db.Book.findOne({book_id}).then((book)=>{
+                bookid=book._id
+                return db.Post.findOne({user_id:userid,book_id:bookid}).then((post)=>{
+                    if(post){
+                        
+                        post.comment=newcomment
+                        post.save()
+                        return {
+                            statuscode : 200,
+                            message : "Comment updated"
+                        }
+                    }
+                })
+            })
+        }
+    })
+    
+
+}
+
 module.exports={
     adminlogin,
     addnewbook,
     editbook,
     deletebook,
-    viewbooks,
     addbook,
-    register,
-    userlogin,
+    viewbooks,
     viewusers,
     blockuser,
     unblockuser,
+    adminviewbook,
+    register,
+    userlogin,
     getbooks,
     getbook,
-    adminviewbook,
-    postcomment
+    postcomment,
+    editcomment
 }
 
 
@@ -433,6 +479,7 @@ module.exports={
 //                  print( student.name );
 //                } );
 //   }
+
 //  https://www.mongodb.com/docs/manual/reference/method/cursor.skip/
 //  https://www.tutorialspoint.com/write-a-mongodb-query-to-get-nested-value
 //  > db.users.find({"age" : {"$gte" : 18, "$lte" : 30}})
