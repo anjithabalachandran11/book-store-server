@@ -1,4 +1,5 @@
 const db=require('./model')
+const jwt=require('jsonwebtoken')
 
 // ADMIN OPERATIONS
 
@@ -6,10 +7,12 @@ adminlogin = (username,password)=>{
     return db.User.findOne({username}).then((user)=>{
         if(user){
             if(user.password==password){
+                const token = jwt.sign({cuser:username},'mysecretkey@098')
                 return {
                     message : 'login success',
                     statuscode : 200,
-                    user
+                    user,
+                    token
                 }
             }
             else{
@@ -108,7 +111,6 @@ deletebook = (data)=>{
             }
         }
     })
-    
 }
 
 addbook = (data)=>{
@@ -126,7 +128,6 @@ addbook = (data)=>{
                     statuscode : 201
                 }
             }
-            
         }
         else{
             return {
@@ -145,7 +146,6 @@ viewbooks = (sortval,skipval)=>{
     //.skip(skipval)
     //.limit(5)
     .then((result)=>{
-        //console.log(result)
         if(result){
             return {
                 message : "book details",
@@ -159,8 +159,6 @@ viewbooks = (sortval,skipval)=>{
 viewusers = (sortval)=>{
     return db.User.find({"category":{"$ne":"ADMIN"}})
     .sort({[sortval]:1})
-    //.skip(1)
-    //.limit(5)
     .then((result)=>{
         if(result){
             return {
@@ -187,7 +185,6 @@ blockuser = (userid)=>{
                     statuscode : 201
                 }
             }
-            
         }
         else{
             return {
@@ -196,7 +193,6 @@ blockuser = (userid)=>{
             }
         }
     })
-    
 }
 
 unblockuser = (userid)=>{
@@ -213,8 +209,7 @@ unblockuser = (userid)=>{
                     message : "User already unblocked!!!",
                     statuscode : 201
                 }
-            }
-            
+            } 
         }
         else{
             return {
@@ -223,15 +218,12 @@ unblockuser = (userid)=>{
             }
         }
     })
-    
 }
 
 adminviewbook = (book_id)=>{
-    //console.log(book_id)
     return db.Book.findOne({book_id})
     .populate('comments')
     .then((data)=>{
-        //console.log(data)
         if(data){
             return {
                 message : "Book exist",
@@ -241,7 +233,6 @@ adminviewbook = (book_id)=>{
         }
     })
 }
-
 
 // CUSTOMER OPERATIONS
 
@@ -255,7 +246,6 @@ register = (userdata)=>{
             }
         }
         else{
-            
             const newUser = new db.User({
                 user_id : userdata.user_id,
                 username : userdata.username,
@@ -277,10 +267,12 @@ userlogin=(username,password)=>{
         if(user){
             if(user.userstatus!='BLOCKED'){
                 if(user.password==password){
+                    const token = jwt.sign({cuser:username},'mysecretkey@098')
                     return {
                         message : "Login success..",
                         statuscode : 200,
-                        user
+                        user,
+                        token
                     }
                 }
                 else{
@@ -296,8 +288,6 @@ userlogin=(username,password)=>{
                     statuscode : 202
                 }
             }
-            
-            
         }
         else{
             return {
@@ -313,7 +303,6 @@ getbooks = (sortval)=>{
     .populate('comments')
     .sort({[sortval]:1})
     .then((books)=>{
-        //console.log(books)
         if(books){
             return {
                 message : "book details",
@@ -325,11 +314,9 @@ getbooks = (sortval)=>{
 }
 
 getbook = (book_id)=>{
-    //console.log(book_id)
     return db.Book.findOne({book_id})
     .populate('comments')
     .then((data)=>{
-        //console.log(data)
         if(data){
             return {
                 message : "Book exist",
@@ -350,14 +337,11 @@ postcomment=(comment,rating,user_id,book_id,)=>{
     userid=0
     bookid=0
     username=""
-    //console.log(book_id,user_id)
     return db.User.findOne({user_id}).then((user)=>{
-        //console.log(user)
         if(user){
             userid=user._id
             username=user.name
             return db.Book.findOne({book_id}).then((book)=>{
-                //console.log(book)
                 if(book){
                     bookid=book._id
                     const newpost = new db.Post({
@@ -370,15 +354,11 @@ postcomment=(comment,rating,user_id,book_id,)=>{
                     book.comments.push(newpost._id)
                     book.ratings.push(newpost.rating)
                     newpost.save()
-                    //book.save()
                     let sum=0
                     book.ratings.forEach((i)=>{
                         sum=sum+i
-                        //console.log(i)
                     })
-                    //console.log(book.ratings.length)
                     book.averagerating=Math.floor(sum/book.ratings.length)
-                    //console.log(book.averagerating)
                     book.save()
                     return {
                         message : "post added",
@@ -402,7 +382,7 @@ postcomment=(comment,rating,user_id,book_id,)=>{
     })
 }
 
-editcomment=(newcomment,user_id,book_id)=>{
+editcomment=(newcomment,rating,user_id,book_id)=>{
     return db.User.findOne({user_id}).then((user)=>{
         if(user){
             userid=user._id
@@ -411,10 +391,27 @@ editcomment=(newcomment,user_id,book_id)=>{
                 return db.Post.findOne({user_id:userid,book_id:bookid}).then((post)=>{
                     if(post){
                         post.comment=newcomment
+                        let old_rating= post.rating
+                        post.rating=rating
                         post.save()
+                        let index = book.ratings.indexOf(old_rating)
+                        let r=book.ratings.splice(index,1)
+                        book.ratings.push(rating)
+                        let sum=0
+                        book.ratings.forEach((i)=>{
+                            sum=sum+i
+                        })
+                        book.averagerating=Math.floor(sum/book.ratings.length)
+                        book.save()
                         return {
                             statuscode : 200,
                             message : "Comment updated"
+                        }
+                    }
+                    else{
+                        return {
+                            statuscode : 201,
+                            message : "Firt post comment and rating to edit"
                         }
                     }
                 })
@@ -429,22 +426,34 @@ deletecomment=(user_id,book_id)=>{
             userid=user._id
             return db.Book.findOne({book_id}).then((book)=>{
                 bookid=book._id
-                return db.Post.findOne({user_id:userid,book_id:bookid}).then((post)=>{
+                return db.Post.findOneAndDelete({user_id:userid,book_id:bookid}).then((post)=>{
                     if(post){
-                        
-                        post.comment=newcomment
-                        post.save()
+                        let indexofcomment=book.comments.indexOf(post._id)
+                        let c=book.comments.splice(indexofcomment,1)
+                        let sum=0
+                        book.ratings.forEach((i)=>{
+                            sum=sum+i
+                        })
+                        let indexofrating=book.ratings.indexOf(post.rating)
+                        let r=book.ratings.splice(indexofrating,1)
+                        n=parseInt(r[0])
+                        book.averagerating=Math.floor((sum-n)/(book.ratings.length))
+                        book.save()
                         return {
                             statuscode : 200,
-                            message : "Comment updated"
+                            message : "Comment deleted"
+                        }
+                    }
+                    else{
+                        return {
+                            statuscode : 201,
+                            message : "Firt post comment and rating to delete"
                         }
                     }
                 })
             })
         }
     })
-    
-
 }
 
 module.exports={
@@ -463,25 +472,6 @@ module.exports={
     getbooks,
     getbook,
     postcomment,
-    editcomment
+    editcomment,
+    deletecomment
 }
-
-
-
-
-// function printStudents(pageNumber, nPerPage) {
-//     print( "Page: " + pageNumber );
-//     db.students.find()
-//                .sort( { _id: 1 } )
-//                .skip( pageNumber > 0 ? ( ( pageNumber - 1 ) * nPerPage ) : 0 )
-//                .limit( nPerPage )
-//                .forEach( student => {
-//                  print( student.name );
-//                } );
-//   }
-
-//  https://www.mongodb.com/docs/manual/reference/method/cursor.skip/
-//  https://www.tutorialspoint.com/write-a-mongodb-query-to-get-nested-value
-//  > db.users.find({"age" : {"$gte" : 18, "$lte" : 30}})
-// > db.raffle.find({"ticket_no" : {"$in" : [725, 542, 390]}})
-// https://www.oreilly.com/library/view/mongodb-the-definitive/9781449344795/ch04.html

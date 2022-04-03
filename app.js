@@ -8,27 +8,46 @@ app.use(cors({
     origin:'http://localhost:4200'
 }))
 
+//jwtmiddleware to validate token
+
+const jwtmiddleware =  (req,res,next) =>{
+    try{
+        const token = req.headers['x-access-token']
+        const data = jwt.verify(token,'mysecretkey@098')
+        next()
+    }
+    catch (err){
+        res.json({
+            statuscode:404,
+            status : false,
+            message: 'PLEASE LOGIN'
+        })
+        
+    }
+}
+
 // ADMIN REQUESTS
 
-app.post('/adminlogin',(req,res)=>{
+app.post('/adminlogin', (req,res)=>{
     fun.adminlogin(req.body.username,req.body.password).then((result)=>{
         res.status(result.statuscode).json(result)
     })
 })
 
-app.post('/addbook',(req,res)=>{
+app.post('/addbook',jwtmiddleware,(req,res)=>{
     fun.addnewbook(req.body.book_id,req.body.book_name,req.body.author,req.body.description,req.body.language,req.body.publisher,req.body.price)
     .then((result)=>{
         res.status(result.statuscode).json(result)
     })
 })
 
-app.put('/edit',(req,res)=>{
+app.put('/edit',jwtmiddleware,(req,res)=>{
     fun.editbook(req.body)
     .then((result)=>{
         res.status(result.statuscode).json(result)
     })
 })
+
 app.put('/delete',(req,res)=>{
     fun.deletebook(req.body.book_id)
     .then((result)=>{
@@ -43,14 +62,14 @@ app.put('/add',(req,res)=>{
     })
 })
 
-app.post('/viewbook',(req,res)=>{
+app.post('/viewbook',jwtmiddleware,(req,res)=>{
     fun.viewbooks(req.body.sortoption,parseInt(req.body.skipval))
     .then((result)=>{
         res.status(result.statuscode).json(result)
     })
 })
 
-app.post('/viewuser',(req,res)=>{
+app.post('/viewuser',jwtmiddleware,(req,res)=>{
     fun.viewusers(req.body.option)
     .then((result)=>{
         res.status(result.statuscode).json(result)
@@ -71,13 +90,12 @@ app.put('/unblockuser',(req,res)=>{
     })
 })
 
-app.post('/adminbook',(req,res)=>{
+app.post('/adminbook',jwtmiddleware,(req,res)=>{
     fun.adminviewbook(req.body.bookid)
     .then((data)=>{
         res.status(data.statuscode).json(data)
     })
 })
-
 
 // CUSTOMER REQUESTS
 
@@ -93,14 +111,14 @@ app.post('/login',(req,res)=>{
     })
 })
 
-app.post('/books',(req,res)=>{
+app.post('/books',jwtmiddleware,(req,res)=>{
     fun.getbooks(req.body.option)
     .then((result)=>{
         res.status(result.statuscode).json(result)
     })
 })
 
-app.post('/book',(req,res)=>{
+app.post('/book',jwtmiddleware,(req,res)=>{
     fun.getbook(req.body.bookid)
     .then((data)=>{
         res.status(data.statuscode).json(data)
@@ -120,7 +138,17 @@ app.post('/postcomment',(req,res)=>{
 app.put('/editcomment',(req,res)=>{
     userid=parseInt(req.body.userid)
     bookid=parseInt(req.body.bookid)
-    fun.editcomment(req.body.newcomment,userid,bookid)
+    rating=parseInt(req.body.rating)
+    fun.editcomment(req.body.newcomment,rating,userid,bookid)
+    .then((result)=>{
+        res.status(result.statuscode).json(result)
+    })
+})
+
+app.put('/deletecomment',(req,res)=>{
+    userid=parseInt(req.body.userid)
+    bookid=parseInt(req.body.bookid)
+    fun.deletecomment(userid,bookid)
     .then((result)=>{
         res.status(result.statuscode).json(result)
     })
