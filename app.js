@@ -10,10 +10,10 @@ app.use(cors({
 
 //jwtmiddleware to validate token
 
-const jwtmiddleware =  (req,res,next) =>{
+const jwtmiddleware =  async (req,res,next) =>{
     try{
         const token = req.headers['x-access-token']
-        const data = jwt.verify(token,'mysecretkey@098')
+        const data = await jwt.verify(token,'mysecretkey@098')
         next()
     }
     catch (err){
@@ -28,70 +28,78 @@ const jwtmiddleware =  (req,res,next) =>{
 
 // ADMIN REQUESTS
 
-app.post('/adminlogin', (req,res)=>{
-    fun.adminlogin(req.body.username,req.body.password).then((result)=>{
+app.post('/adminlogin', async (req,res)=>{
+    await fun.adminlogin(req.body.username,req.body.password).then((result)=>{
         res.status(result.statuscode).json(result)
     })
 })
 
-app.post('/addbook',jwtmiddleware,(req,res)=>{
-    fun.addnewbook(req.body.book_id,req.body.book_name,req.body.author,req.body.description,req.body.language,req.body.publisher,req.body.price)
+app.post('/addbook',jwtmiddleware,async (req,res)=>{
+    await fun.addnewbook(req.body.book_id,req.body.book_name,req.body.author,req.body.description,req.body.language,req.body.publisher,req.body.price)
     .then((result)=>{
         res.status(result.statuscode).json(result)
     })
 })
 
-app.put('/edit',jwtmiddleware,(req,res)=>{
-    fun.editbook(req.body)
+app.put('/edit',jwtmiddleware, async(req,res)=>{
+    await fun.editbook(req.body)
     .then((result)=>{
         res.status(result.statuscode).json(result)
     })
 })
 
-app.put('/delete',(req,res)=>{
-    fun.deletebook(req.body.book_id)
+app.get('/getebook/:cbook', async (req,res)=>{
+    id=parseInt(req.params.cbook)
+    await fun.adminviewbook(id)
     .then((result)=>{
         res.status(result.statuscode).json(result)
     })
 })
 
-app.put('/add',(req,res)=>{
-    fun.addbook(req.body.book_id)
+app.put('/delete',async(req,res)=>{
+    await fun.deletebook(req.body.book_id)
     .then((result)=>{
         res.status(result.statuscode).json(result)
     })
 })
 
-app.post('/viewbook',jwtmiddleware,(req,res)=>{
-    fun.viewbooks(req.body.sortoption,parseInt(req.body.skipval))
+app.put('/add',async (req,res)=>{
+    await fun.addbook(req.body.book_id)
     .then((result)=>{
         res.status(result.statuscode).json(result)
     })
 })
 
-app.post('/viewuser',jwtmiddleware,(req,res)=>{
-    fun.viewusers(req.body.option)
+app.post('/viewbook',jwtmiddleware,async (req,res)=>{
+    await fun.viewbooks(req.body.sortoption,parseInt(req.body.skipval))
     .then((result)=>{
         res.status(result.statuscode).json(result)
     })
 })
 
-app.put('/blockuser',(req,res)=>{
-    fun.blockuser(req.body.user_id)
+app.post('/viewuser',jwtmiddleware,async (req,res)=>{
+    await fun.viewusers(req.body.option)
     .then((result)=>{
         res.status(result.statuscode).json(result)
     })
 })
 
-app.put('/unblockuser',(req,res)=>{
-    fun.unblockuser(req.body.user_id)
+app.put('/blockuser',async (req,res)=>{
+    await fun.blockuser(req.body.user_id)
     .then((result)=>{
         res.status(result.statuscode).json(result)
     })
 })
 
-app.post('/adminbook',jwtmiddleware,(req,res)=>{
-    fun.adminviewbook(req.body.bookid)
+app.put('/unblockuser',async(req,res)=>{
+    await fun.unblockuser(req.body.user_id)
+    .then((result)=>{
+        res.status(result.statuscode).json(result)
+    })
+})
+
+app.post('/adminbook',jwtmiddleware,async(req,res)=>{
+    await fun.adminviewbook(req.body.bookid)
     .then((data)=>{
         res.status(data.statuscode).json(data)
     })
@@ -131,6 +139,7 @@ app.post('/postcomment',(req,res)=>{
     rating=parseInt(req.body.rating)
     fun.postcomment(req.body.comment,rating,userid,bookid)
     .then((result)=>{
+        //console.log(result)
         res.status(result.statuscode).json(result)
     })
 })

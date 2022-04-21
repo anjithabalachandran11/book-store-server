@@ -25,7 +25,7 @@ adminlogin = (username,password)=>{
         }
         else {
             return {
-                message : 'unable to login',
+                message : 'only admin can login',
                 statuscode : 202,
             }
         }
@@ -220,8 +220,8 @@ unblockuser = (userid)=>{
     })
 }
 
-adminviewbook = (book_id)=>{
-    return db.Book.findOne({book_id})
+adminviewbook =  (book_id)=>{
+     return db.Book.findOne({book_id})
     .populate('comments')
     .then((data)=>{
         if(data){
@@ -265,7 +265,7 @@ register = (userdata)=>{
 userlogin=(username,password)=>{
     return db.User.findOne({username}).then((user)=>{
         if(user){
-            if(user.userstatus!='BLOCKED'){
+            if(user.userstatus!='BLOCKED' && user.username!='ADMIN'){
                 if(user.password==password){
                     const token = jwt.sign({cuser:username},'mysecretkey@098')
                     return {
@@ -318,6 +318,7 @@ getbook = (book_id)=>{
     .populate('comments')
     .then((data)=>{
         if(data){
+            //console.log("data: ",data)
             return {
                 message : "Book exist",
                 statuscode : 200,
@@ -342,27 +343,27 @@ postcomment=(comment,rating,user_id,book_id,)=>{
             userid=user._id
             username=user.name
             return db.Book.findOne({book_id}).then((book)=>{
-                if(book){
-                    bookid=book._id
+                if (book) {
+                    bookid = book._id
                     const newpost = new db.Post({
-                        comment : comment,
-                        rating : rating,
-                        user_id : userid,
-                        username : username,
-                        book_id : bookid
+                        comment: comment,
+                        rating: rating,
+                        user_id: userid,
+                        username: username,
+                        book_id: bookid
                     })
                     book.comments.push(newpost._id)
                     book.ratings.push(newpost.rating)
                     newpost.save()
-                    let sum=0
-                    book.ratings.forEach((i)=>{
-                        sum=sum+i
+                    let sum = 0
+                    book.ratings.forEach((i) => {
+                        sum = sum + i
                     })
-                    book.averagerating=Math.floor(sum/book.ratings.length)
+                    book.averagerating = Math.floor(sum / book.ratings.length)
                     book.save()
                     return {
-                        message : "post added",
-                        statuscode : 200
+                        message: "post added",
+                        statuscode: 200
                     }
                 }
                 else {
